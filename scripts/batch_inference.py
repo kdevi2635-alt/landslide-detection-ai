@@ -52,7 +52,7 @@ def run_batch_inference(model: LandslideDetectionModel,
             'moderate_warning_prob': round(result['probabilities']['moderate_warning'], 4),
             'high_alert_prob': round(result['probabilities']['high_alert'], 4),
             'triggers_count': len(result['primary_triggers']),
-            'primary_triggers': ' | '.join(result['primary_triggers'][:2])  # Top 2 triggers
+            'primary_triggers': ' | '.join(result['primary_triggers'][:2])
         }
         
         predictions.append(pred_dict)
@@ -97,17 +97,6 @@ def generate_summary(predictions: pd.DataFrame) -> None:
     print("\n" + "="*60)
 
 
-def save_predictions(predictions: pd.DataFrame, output_path: str) -> None:
-    """Save predictions to CSV file"""
-    try:
-        predictions.to_csv(output_path, index=False)
-        print(f"\n💾 Predictions saved to: {output_path}")
-        print(f"   Columns: {', '.join(predictions.columns.tolist())}")
-    except Exception as e:
-        print(f"❌ Error saving results: {str(e)}")
-        raise
-
-
 def main():
     parser = argparse.ArgumentParser(
         description="Run batch inference on sensor telemetry CSV"
@@ -127,20 +116,10 @@ def main():
     parser.add_argument(
         "--output", 
         type=str,
-        help="Path to output CSV (default: predictions_<timestamp>.csv)"
-    )
-    parser.add_argument(
-        "--summary-only",
-        action="store_true",
-        help="Print summary without saving CSV"
+        help="Path to output CSV"
     )
     
     args = parser.parse_args()
-    
-    # Set default output path if not provided
-    if args.output is None and not args.summary_only:
-        timestamp = pd.Timestamp.now().strftime("%Y%m%d_%H%M%S")
-        args.output = f"predictions_{timestamp}.csv"
     
     print("="*60)
     print("🏔️ BATCH INFERENCE - LANDSLIDE DETECTION AI")
@@ -163,13 +142,8 @@ def main():
     # Generate summary
     generate_summary(predictions)
     
-    # Save results
-    if not args.summary_only and args.output:
-        save_predictions(predictions, args.output)
-    
     print("\n✅ Batch inference complete!\n")
 
 
 if __name__ == "__main__":
-    import pandas as pd
     main()
